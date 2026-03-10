@@ -1,0 +1,57 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@5
+
+jobs:
+  build_test_and_publish:
+    docker:
+      - image: cimg/openjdk:17.0
+    working_directory: ~/project
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-maven-{{ checksum "pom.xml" }}
+            - v1-maven-
+
+      - run:
+          name: Give execute permission to Maven wrapper
+          command: chmod +x ./mvnw
+
+      - run:
+          name: Build and run tests
+          command: ./mvnw clean verify
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-maven-{{ checksum "pom.xml" }}
+
+      - store_test_results:
+          path: target/surefire-reports
+
+      - store_artifacts:
+          path: target/site/jacoco
+          destination: jacoco-report
+
+      - codecov/upload:
+          file: target/site/jacoco/jacoco.xml
+
+      - run:
+          name: Publish Docker image with Jib
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              ./mvnw -P deploy-docker jib:build \
+                -Djib.to.auth.username=$DOCKERHUB_USERNAME \
+                -Djib.to.auth.password=$DOCKERHUB_TOKEN
+            else
+              echo "Skip Docker publish: not main branch"
+            fi
+
+workflows:
+  build_and_deploy:
+    jobs:
+      - build_test_and_publish
