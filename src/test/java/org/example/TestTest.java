@@ -7,5 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class TestTest {
 
     @Test
-    void test(){}
+    void test(){
+        System.out.println("true");
+    }
 }
