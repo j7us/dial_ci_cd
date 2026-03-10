@@ -37,8 +37,7 @@ jobs:
           path: target/site/jacoco
           destination: jacoco-report
 
-      - codecov/upload:
-          file: target/site/jacoco/jacoco.xml
+      - codecov/upload
 
       - run:
           name: Publish Docker image with Jib
