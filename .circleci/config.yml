@@ -6,7 +6,7 @@ orbs:
 jobs:
   build_test_and_publish:
     docker:
-      - image: cimg/openjdk:17.0
+      - image: cimg/openjdk:21.0
     working_directory: ~/project
 
     steps:
